@@ -218,7 +218,13 @@ def _launch_demo(args, model, processor):
             tokenizer, timeout=20.0, skip_prompt=True, skip_special_tokens=True
         )
 
-        gen_kwargs = {"max_new_tokens": 512, "streamer": streamer, **inputs}
+        gen_kwargs = {
+            "max_new_tokens": 512,
+            "streamer": streamer,
+            "temperature": 0.8,
+            "top_p": 0.95,
+            **inputs,
+        }
 
         thread = Thread(target=model.generate, kwargs=gen_kwargs)
         thread.start()

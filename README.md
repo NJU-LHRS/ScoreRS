@@ -37,6 +37,7 @@ We introduce ScoreRS, a quality assessment model trained on carefully curated la
 - [Evaluation](#evaluation)
   - [CLIP Evaluation](#clip-evaluation)
   - [LVLM Evaluation](#lvlm-evaluation)
+- [Data](#data)
 - [Acknowledgement](#acknowledgement)
 - [Statement](#statement)
 
@@ -441,6 +442,9 @@ python ./python_script/web_demo.py -c PumpkinCat/Qwen2VL-7B-RS-R1 --flash-attn2 
         MODEL_PATH="your_path_to FINAL.pt"  # important!!! must be point to FINAL.pt file and make sure the TextLoRA is under the same folder with the FINAL.pt
         ... # same as eval on Qwen2VL-RS
         ~~~
+
+## Data
++ Our preference data can be found at [Hugging Face](https://huggingface.co/datasets/LHRS/RSRM/tree/main).
 
 ## Acknowledgement
 
