@@ -144,7 +144,7 @@ processor = CLIPProcessor.from_pretrained("PumpkinCat/CLIP-ViT-L14-ScoreRS30")
 image_path = "./dummy_folder/your_image.png"
 image = Image.open(image_path)
 
-inputs = processor(text=["a satellite image of airport", "a staellite image of see"], images=image, return_tensors="pt", padding=True)
+inputs = processor(text=["a satellite image of airport", "a staellite image of sea"], images=image, return_tensors="pt", padding=True)
 
 outputs = model(**inputs)
 logits_per_image = outputs.logits_per_image # this is the image-text similarity score
