@@ -265,7 +265,7 @@ print(response)
 
 ### VLLM Example Usage of Qwen2VL-RS Series
 
-‼️ Make sure your environment satisfy the [VLLM Environment](#VLLM Environment).
+‼️ Make sure your environment satisfy the [VLLM Environment](#vllm-environment).
 
 ~~~python
 from vllm import SamplingParams
