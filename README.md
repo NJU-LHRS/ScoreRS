@@ -51,7 +51,7 @@ The environment specifically used for inference, demonstrations, fine-tuning CLI
 conda create -n scorers python==3.10 -y
 conda activate scorers
 
-cd scorers  # important!!!!!!! Make user your are under the projcet directory for the following command.
+cd scorers  # important!!!!!!! Make sure you are under the projcet directory for the following command.
 bash basic_env_setup.sh
 ~~~
 
@@ -61,7 +61,7 @@ bash basic_env_setup.sh
 conda create -n scorers_vllm python==3.10 -y
 conda activate scorers_vllm
 
-cd scorers  # important!!!!!!! Make user your are under the projcet directory for the following command.
+cd scorers  # important!!!!!!! Make sure you are under the projcet directory for the following command.
 bash vllm_env_setup.sh
 ~~~
 
