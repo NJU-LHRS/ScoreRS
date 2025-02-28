@@ -23,22 +23,22 @@ We introduce ScoreRS, a quality assessment model trained on carefully curated la
 + We release our ScoreRS model, finetuned CLIP, Qwen2VL, and our basic codebase!
 
 ## Table of Contents
-- [News](##news)
-- [Environment Setup](##environment-setup)
-  - [Basic Environment](###basic-environment)
-  - [VLLM Environment](###vllm-environment)
-- [Get Started](##get-started)
-  - [ScoreRS](###scorers)
-  - [CLIP](###clip)
-  - [Qwen2VL-RS Series](###qwen2vl-rs-series)
-  - [Lmdeploy Example](###lmdeploy-example-usage-of-qwen2vl-rs-series)
-  - [VLLM Example](###vllm-example-usage-of-qwen2vl-rs-series)
-  - [Gradio Example](###gradio-example-usage-of-qwen2vl-rs-series)
-- [Evaluation](##evaluation)
-  - [CLIP Evaluation](###clip-evaluation)
-  - [LVLM Evaluation](###lvlm-evaluation)
-- [Acknowledgement](##acknowledgement)
-- [Statement](##statement)
+- [News](#news)
+- [Environment Setup](#environment-setup)
+  - [Basic Environment](#basic-environment)
+  - [VLLM Environment](#vllm-environment)
+- [Get Started](#get-started)
+  - [ScoreRS](#scorers)
+  - [CLIP](#clip)
+  - [Qwen2VL-RS Series](#qwen2vl-rs-series)
+  - [Lmdeploy Example](#lmdeploy-example-usage-of-qwen2vl-rs-series)
+  - [VLLM Example](#vllm-example-usage-of-qwen2vl-rs-series)
+  - [Gradio Example](#gradio-example-usage-of-qwen2vl-rs-series)
+- [Evaluation](#evaluation)
+  - [CLIP Evaluation](#clip-evaluation)
+  - [LVLM Evaluation](#lvlm-evaluation)
+- [Acknowledgement](#acknowledgement)
+- [Statement](#statement)
 
 
 ## Environment Setup
