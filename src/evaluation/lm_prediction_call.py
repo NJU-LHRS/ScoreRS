@@ -33,13 +33,17 @@ from src.model.vhm import VHM as VHM_Loader
 from src.preprocess.conversation_template import conv_templates
 from tqdm import tqdm
 from transformers import AutoTokenizer
-from .vllm_template_factory import (
-    model_example_map,
-    load_llm,
-)
 from qwen_vl_utils import process_vision_info
 from PIL import Image
-from vllm import SamplingParams
+
+try:
+    from vllm import SamplingParams
+    from .vllm_template_factory import (
+        model_example_map,
+        load_llm,
+    )
+except ImportError:
+    pass
 
 eval_logger = logging.getLogger("RSEval")
 
@@ -91,7 +95,7 @@ class LM(ABC):
         self.do_sample = do_sample
         self.use_cache = use_cache
         self.device = device
-        self.dtype = STR_TO_TYPE[dtype]
+        self.dtype = STR_TO_TYPE[dtype] if dtype in STR_TO_TYPE else dtype
         self.max_new_tokens = max_new_tokens
         self.cache_hook = CacheHook(None)
         self.load_everything()
