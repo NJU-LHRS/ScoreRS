@@ -38,6 +38,7 @@ We introduce ScoreRS, a quality assessment model trained on carefully curated la
   - [CLIP Evaluation](#clip-evaluation)
   - [LVLM Evaluation](#lvlm-evaluation)
 - [Data](#data)
+- [Possible Error and Fix](#possible-error-and-fix)
 - [Acknowledgement](#acknowledgement)
 - [Statement](#statement)
 
@@ -445,6 +446,11 @@ python ./python_script/web_demo.py -c PumpkinCat/Qwen2VL-7B-RS-R1 --flash-attn2 
 
 ## Data
 + Our preference data can be found at [Hugging Face](https://huggingface.co/datasets/LHRS/RSRM/tree/main).
+
+## Possible Error and Fix
++ If you encounter an error related to "flash_attn" when using "Llama", please install "flash_attn" using the following command (from [here](https://github.com/oobabooga/text-generation-webui/issues/4357#issuecomment-2319573100)):
+
+  `pip install https://github.com/Dao-AILab/flash-attention/releases/download/v2.5.8/flash_attn-2.5.8+cu122torch2.3cxx11abiFALSE-cp310-cp310-linux_x86_64.whl`
 
 ## Acknowledgement
 
