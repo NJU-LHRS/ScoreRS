@@ -9,5 +9,5 @@ pip install pytablewriter evaluate tenacity scikit-learn sacrebleu
 pip install trl==0.9.6 nltk jieba rouge_chinese
 pip install accelerate==1.0.1
 pip install mmengine
-pip install -e /src/custom_trainer/LLaMA-Factory
-pip install -e /src/lmdeploy
+pip install -e ./src/custom_trainer/LLaMA-Factory
+pip install -e ./src/lmdeploy
