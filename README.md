@@ -7,9 +7,9 @@
     <a href="https://huggingface.co/collections/PumpkinCat/scorers-67beba8b1f20eec61f2d0c12">
         <img alt="Hugging Face Model" src="https://img.shields.io/badge/🤗%20Hugging%20Face-Model-yellow">
     </a>
-    <!-- <a href="https://arxiv.org/abs/XXXX.XXXXX">
-        <img alt="arXiv" src="https://img.shields.io/badge/arXiv-XXXX.XXXXX-b31b1b">
-    </a> -->
+    <a href="https://arxiv.org/abs/2503.00743">
+        <img alt="arXiv" src="https://img.shields.io/badge/arXiv-2503.00743-b31b1b">
+    </a>
 </p>
 
 <p align="center">
@@ -19,6 +19,7 @@
 We introduce ScoreRS, a quality assessment model trained on carefully curated large-scale remote sensing vision-language preference data. ScoreRS effectively scores and filters vision-language datasets, improving model performance by selecting high-quality data for training.
 
 ## News
++ Our report is available at [arXiv](https://arxiv.org/abs/2503.00743) now!
 + 🎉🎉🎉 We release our report [here](./assets/ScoreRS.pdf). Our [data](https://huggingface.co/datasets/LHRS/RSRM) and [model](https://huggingface.co/collections/PumpkinCat/scorers-67beba8b1f20eec61f2d0c12) are also released!
 + We release our ScoreRS model, finetuned CLIP, Qwen2VL, and our basic codebase!
 
