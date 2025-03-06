@@ -10,6 +10,9 @@
     <a href="https://arxiv.org/abs/2503.00743">
         <img alt="arXiv" src="https://img.shields.io/badge/arXiv-2503.00743-b31b1b">
     </a>
+    <a href="https://thinkable-technician-883.notion.site/ScoreRS-Quality-Driven-Curation-of-Remote-Sensing-Vision-Language-Data-via-Learned-Scoring-Models-1aed4688ded08153a298da10d690c30e">
+        <img alt="Blog Post" src="https://img.shields.io/badge/📝%20Blog-Post-green">
+    </a>
 </p>
 
 <p align="center">
