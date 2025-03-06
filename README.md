@@ -19,6 +19,7 @@
 We introduce ScoreRS, a quality assessment model trained on carefully curated large-scale remote sensing vision-language preference data. ScoreRS effectively scores and filters vision-language datasets, improving model performance by selecting high-quality data for training.
 
 ## News
++ Please checkout the [blogpost](https://thinkable-technician-883.notion.site/ScoreRS-Quality-Driven-Curation-of-Remote-Sensing-Vision-Language-Data-via-Learned-Scoring-Models-1aed4688ded08153a298da10d690c30e) for the chain-of-thought behind this project :).
 + Our report is available at [arXiv](https://arxiv.org/abs/2503.00743) now!
 + 🎉🎉🎉 We release our report [here](./assets/ScoreRS.pdf). Our [data](https://huggingface.co/datasets/LHRS/RSRM) and [model](https://huggingface.co/collections/PumpkinCat/scorers-67beba8b1f20eec61f2d0c12) are also released!
 + We release our ScoreRS model, finetuned CLIP, Qwen2VL, and our basic codebase!
