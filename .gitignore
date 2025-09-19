@@ -170,3 +170,8 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 .DS_Store
+
+# custom .gitignore
+.vscode/
+.idea/
+.DS_Store
