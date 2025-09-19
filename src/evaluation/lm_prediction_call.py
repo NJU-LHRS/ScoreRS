@@ -33,17 +33,13 @@ from src.model.vhm import VHM as VHM_Loader
 from src.preprocess.conversation_template import conv_templates
 from tqdm import tqdm
 from transformers import AutoTokenizer
+from .vllm_template_factory import (
+    model_example_map,
+    load_llm,
+)
 from qwen_vl_utils import process_vision_info
 from PIL import Image
-
-try:
-    from vllm import SamplingParams
-    from .vllm_template_factory import (
-        model_example_map,
-        load_llm,
-    )
-except ImportError:
-    pass
+from vllm import SamplingParams
 
 eval_logger = logging.getLogger("RSEval")
 
@@ -95,7 +91,7 @@ class LM(ABC):
         self.do_sample = do_sample
         self.use_cache = use_cache
         self.device = device
-        self.dtype = STR_TO_TYPE[dtype] if dtype in STR_TO_TYPE else dtype
+        self.dtype = STR_TO_TYPE[dtype]
         self.max_new_tokens = max_new_tokens
         self.cache_hook = CacheHook(None)
         self.load_everything()
@@ -130,15 +126,27 @@ class VLLMLM(LM):
             or self.model_name == "qwen2-vl-chat"
             or self.model_name == "qwen2-vl-r1"
         ):
-            self.vg_prefix = "Output the bounding box of the following object in the image. <|object_ref_start|>"
-            self.vg_suffix = "<|object_ref_end|>"
-            self.bbox_normalize_bound = 1000
-            self.extract_bbox = self._extract_bbox_qwen2vl
+            if "Qwen2.5-VL" in self.model_path:
+                self.vg_prefix = "Output the bounding box of this object in json format: "
+                self.vg_suffix = ""
+                self.bbox_normalize_bound = None
+                self.extract_bbox = self._extract_bbox_qwen2_5vl
+            else:
+                self.vg_prefix = "Output the bounding box of the following object in the image. <|object_ref_start|>"
+                self.vg_suffix = "<|object_ref_end|>"
+                self.bbox_normalize_bound = 1000
+                self.extract_bbox = self._extract_bbox_qwen2vl
         elif self.model_name == "internvl":
-            self.vg_prefix = "Please provide the bounding box coordinate of the region this sentence describes: <ref>"
-            self.vg_suffix = "</ref>"
-            self.bbox_normalize_bound = 1000
-            self.extract_bbox = self._extract_bbox_internvl
+            if "InternVL3" in self.model_path:
+                self.vg_prefix = "Please provide the bounding box coordinate of the region this sentence describes: <ref>"
+                self.vg_suffix = "</ref>"
+                self.bbox_normalize_bound = 1000
+                self.extract_bbox = self._extract_bbox_internvl3
+            else:
+                self.vg_prefix = "Please provide the bounding box coordinate of the region this sentence describes: <ref>"
+                self.vg_suffix = "</ref>"
+                self.bbox_normalize_bound = 1000
+                self.extract_bbox = self._extract_bbox_internvl
         else:
             config_path = os.path.join(self.model_path, "config.json")
             model_config = json.load(open(config_path, "r"))
@@ -216,6 +224,80 @@ class VLLMLM(LM):
         outputs = [output.outputs[0].text for output in outputs]
         return outputs
 
+    def _extract_bbox_internvl3(self, text):
+        # Use regex to extract content inside <box> tags
+        box_pattern = re.compile(r'<box>(.*?)</box>', re.DOTALL)
+        box_match = box_pattern.search(text)
+        
+        if box_match:
+            box_content = box_match.group(1)
+            # Extract coordinates using pattern that matches numeric arrays
+            coords_pattern = re.compile(r'\[\[(.*?)\]\]')
+            coords_match = coords_pattern.search(box_content)
+            
+            if coords_match:
+                # Extract the numbers from the coordinate string
+                coord_values = coords_match.group(1)
+                # Split by comma and convert to floats
+                try:
+                    coords = [float(x.strip()) for x in coord_values.split(',')]
+                    if len(coords) == 4:  # Ensure we have 4 coordinates (x1, y1, x2, y2)
+                        return [coords]
+                except ValueError:
+                    pass
+        
+        # Fallback to the regular InternVL extraction method
+        pattern = re.compile(r"\[*\[(.*?),(.*?),(.*?),(.*?)\]\]*")
+        coords = pattern.findall(text)
+        if len(coords) == 0:
+            return None
+        
+        try:        
+            results = [list(map(float, coord)) for coord in coords]
+        except Exception as e:
+            print(f"Error extracting bounding boxes: {e}")
+            results = None
+        return results
+
+    def _extract_bbox_qwen2_5vl(self, text):
+        # Pattern for json format with bbox_2d
+        json_pattern = re.compile(r'```json\n(.*?)\n```', re.DOTALL)
+        json_match = json_pattern.search(text)
+        
+        if json_match:
+            try:
+                json_data = json.loads(json_match.group(1))
+                if isinstance(json_data, list):
+                    bboxes = []
+                    for item in json_data:
+                        if "bbox_2d" in item:
+                            bboxes.append(item["bbox_2d"])
+                else:
+                    if "bbox_2d" in json_data:
+                        bboxes = [json_data["bbox_2d"]]
+                    else:
+                        bboxes = None
+                if bboxes:
+                    return bboxes
+            except json.JSONDecodeError:
+                pass
+        
+        # Fallback to pattern matching similar to qwen2vl format
+        pattern = re.compile(
+            r"\((\d+(?:\.\d+)?),(\d+(?:\.\d+)?)\),\((\d+(?:\.\d+)?),(\d+(?:\.\d+)?)\)"
+        )
+        reasoning_pattern = re.compile(
+            r"\[(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)\]"
+        )
+        coords = pattern.findall(text)
+        if len(coords) == 0:
+            reasoning_coords = reasoning_pattern.findall(text)
+            if len(reasoning_coords) == 0:
+                return None
+            return [list(map(float, coord)) for coord in reasoning_coords]
+        
+        return [list(map(float, coord)) for coord in coords]
+
     def _extract_bbox_internvl(self, text):
         pattern = re.compile(r"\[*\[(.*?),(.*?),(.*?),(.*?)\]\]*")
         coords = pattern.findall(text)
@@ -264,17 +346,27 @@ class LMDeployLM(LM):
             do_sample=self.do_sample,
         )
 
-        if "Qwen2-VL" in self.model_path:
+        if "Qwen2-VL" in self.model_path or "Qwen2VL" in self.model_path:
             self.vg_prefix = "Output the bounding box of the following object in the image. <|object_ref_start|>"
             self.vg_suffix = "<|object_ref_end|>"
             self.bbox_normalize_bound = 1000
             self.extract_bbox = self._extract_bbox_qwen2vl
+        elif "Qwen2.5-VL" in self.model_path:
+            self.vg_prefix = "Output the bounding box of the following object in the image. <|object_ref_start|>"
+            self.vg_suffix = "<|object_ref_end|>"
+            self.extract_bbox = self._extract_bbox_qwen2_5vl
+            self.bbox_normalize_bound = None
+        elif "InternVL3" in self.model_path:
+            self.vg_prefix = "Please provide the bounding box coordinate of the region this sentence describes: <ref>"
+            self.vg_suffix = "</ref>"
+            self.bbox_normalize_bound = 1000
+            self.extract_bbox = self._extract_bbox_internvl3
         elif "InternVL" in self.model_path:
             self.vg_prefix = "Please provide the bounding box coordinate of the region this sentence describes: <ref>"
             self.vg_suffix = "</ref>"
             self.bbox_normalize_bound = 1000
             self.extract_bbox = self._extract_bbox_internvl
-        else:
+        elif "llava" not in self.model_path:
             config_path = os.path.join(self.model_path, "config.json")
             model_config = json.load(open(config_path, "r"))
             if (
@@ -288,6 +380,11 @@ class LMDeployLM(LM):
                 if self.reasoning_config:
                     self.bbox_normalize_bound = 1000
                 self.extract_bbox = self._extract_bbox_qwen2vl
+            elif "Qwen2.5-VL" in model_config["_name_or_path"]:
+                self.vg_prefix = "Output the bounding box of the following object in the image. <|object_ref_start|>"
+                self.vg_suffix = "<|object_ref_end|>"
+                self.bbox_normalize_bound = 1000
+                self.extract_bbox = self._extract_bbox_qwen2_5vl
             elif "InternVL" in model_config["_name_or_path"]:
                 self.vg_prefix = "Please provide the bounding box coordinate of the region this sentence describes: <ref>"
                 self.vg_suffix = "</ref>"
@@ -299,6 +396,74 @@ class LMDeployLM(LM):
                 )
 
         self.vqa_suffix = ""
+    
+    def _extract_bbox_internvl3(self, text):
+        # Use regex to extract content inside <box> tags
+        box_pattern = re.compile(r'<box>(.*?)</box>', re.DOTALL)
+        box_match = box_pattern.search(text)
+        
+        if box_match:
+            box_content = box_match.group(1)
+            # Extract coordinates using pattern that matches numeric arrays
+            coords_pattern = re.compile(r'\[\[(.*?)\]\]')
+            coords_match = coords_pattern.search(box_content)
+            
+            if coords_match:
+                # Extract the numbers from the coordinate string
+                coord_values = coords_match.group(1)
+                # Split by comma and convert to floats
+                try:
+                    coords = [float(x.strip()) for x in coord_values.split(',')]
+                    if len(coords) == 4:  # Ensure we have 4 coordinates (x1, y1, x2, y2)
+                        return [coords]
+                except ValueError:
+                    pass
+        
+        # Fallback to the regular InternVL extraction method
+        pattern = re.compile(r"\[*\[(.*?),(.*?),(.*?),(.*?)\]\]*")
+        coords = pattern.findall(text)
+        if len(coords) == 0:
+            return None
+        
+        try:        
+            results = [list(map(float, coord)) for coord in coords]
+        except Exception as e:
+            print(f"Error extracting bounding boxes: {e}")
+            results = None
+        return results
+
+    def _extract_bbox_qwen2_5vl(self, text):
+        # Pattern for json format with bbox_2d
+        json_pattern = re.compile(r'```json\n(.*?)\n```', re.DOTALL)
+        json_match = json_pattern.search(text)
+        
+        if json_match:
+            try:
+                json_data = json.loads(json_match.group(1))
+                bboxes = []
+                for item in json_data:
+                    if "bbox_2d" in item:
+                        bboxes.append(item["bbox_2d"])
+                if bboxes:
+                    return bboxes
+            except json.JSONDecodeError:
+                pass
+        
+        # Fallback to pattern matching similar to qwen2vl format
+        pattern = re.compile(
+            r"\((\d+(?:\.\d+)?),(\d+(?:\.\d+)?)\),\((\d+(?:\.\d+)?),(\d+(?:\.\d+)?)\)"
+        )
+        reasoning_pattern = re.compile(
+            r"\[(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)\]"
+        )
+        coords = pattern.findall(text)
+        if len(coords) == 0:
+            reasoning_coords = reasoning_pattern.findall(text)
+            if len(reasoning_coords) == 0:
+                return None
+            return [list(map(float, coord)) for coord in reasoning_coords]
+        
+        return [list(map(float, coord)) for coord in coords]
 
     def _extract_bbox_internvl(self, text):
         pattern = re.compile(r"\[*\[(.*?),(.*?),(.*?),(.*?)\]\]*")

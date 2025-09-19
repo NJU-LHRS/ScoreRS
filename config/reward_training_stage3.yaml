@@ -1,0 +1,53 @@
+run_name: "" # your run name
+run_strategy: "epoch"
+run_duration: 1
+seed: 322
+dry_run: False
+save_folder: "" # your save folder
+device_train_batch_size: 2
+device_eval_batch_size: 2
+max_grad_norm: 1.0
+precision: bf16
+gradient_accumulation_steps: 4
+activation_checkpointing: True
+accelerator_type: "gpu"
+console_log_interval: 10
+
+checkpoint:
+  save_num_checkpoints_to_keep: 100
+  save_interval: 1000
+  save_strategy: "step"
+
+optimizer:
+  name: "adamw"
+  learning_rate: 0.000001
+  weight_decay: 0.1
+  betas: [ 0.9, 0.95 ]
+
+scheduler:
+  name: "cosine_annealing"
+  t_warmup: 500
+  t_factor: 0.01
+  t_min: 0.
+
+wandb:
+  enabled: False
+  project: "" # your wandb project name
+  group: "" # your wandb group name
+  name: "" # your wandb run name
+  log_interval: 100
+  
+
+deepspeed:
+  enabled: True
+  stage: 2
+  offload_optimizer: True
+  offload_param: True
+
+model:
+  train_vision_model: False
+  train_text_model: True
+  train_value_head: True
+
+fsdp:
+  enabled: False

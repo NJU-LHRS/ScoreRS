@@ -22,6 +22,7 @@
 We introduce ScoreRS, a quality assessment model trained on carefully curated large-scale remote sensing vision-language preference data. ScoreRS effectively scores and filters vision-language datasets, improving model performance by selecting high-quality data for training.
 
 ## News
++ 🎉🎉🎉 Our work has been accepted for NeurIPS 2025, and we have released our training and evaluation code. Please stay tuned for the new version of our paper, with tons of exciting new results!
 + Please checkout the [blogpost](https://thinkable-technician-883.notion.site/ScoreRS-Quality-Driven-Curation-of-Remote-Sensing-Vision-Language-Data-via-Learned-Scoring-Models-1aed4688ded08153a298da10d690c30e) for the chain-of-thought behind this project :).
 + Our report is available at [arXiv](https://arxiv.org/abs/2503.00743) now!
 + 🎉🎉🎉 We release our report [here](./assets/ScoreRS.pdf). Our [data](https://huggingface.co/datasets/LHRS/RSRM) and [model](https://huggingface.co/collections/PumpkinCat/scorers-67beba8b1f20eec61f2d0c12) are also released!
@@ -32,6 +33,7 @@ We introduce ScoreRS, a quality assessment model trained on carefully curated la
 - [Environment Setup](#environment-setup)
   - [Basic Environment](#basic-environment)
   - [VLLM Environment](#vllm-environment)
+  - [RL Environment](#rl-environment)
 - [Get Started](#get-started)
   - [ScoreRS](#scorers)
   - [CLIP](#clip)
@@ -39,23 +41,30 @@ We introduce ScoreRS, a quality assessment model trained on carefully curated la
   - [Lmdeploy Example](#lmdeploy-example-usage-of-qwen2vl-rs-series)
   - [VLLM Example](#vllm-example-usage-of-qwen2vl-rs-series)
   - [Gradio Example](#gradio-example-usage-of-qwen2vl-rs-series)
+- [Training](#training)
+  - [Score Model Training](#score-model-training)
+  - [CLIP Training](#clip-training)
+  - [Large VLMs Training](#large-vlm-training)
+  - [RL Training](#rl-training)
 - [Evaluation](#evaluation)
   - [CLIP Evaluation](#clip-evaluation)
   - [LVLM Evaluation](#lvlm-evaluation)
+  - [BoN](#bon-evaluation)
 - [Data](#data)
 - [Possible Error and Fix](#possible-error-and-fix)
 - [Acknowledgement](#acknowledgement)
 - [Statement](#statement)
 
 
+
 ## Environment Setup
 
 ### Basic Environment
 
-The environment specifically used for inference, demonstrations, fine-tuning CLIP and Qwen2VL, without other specifics; you should use this environment.
+This environment used for score model training, inference, demonstrations, fine-tuning CLIP and Qwen2VL, without other specifics; you should use this environment.
 
 ~~~shell
-conda create -n scorers python==3.10 -y
+conda create -n scorers python==3.12 -y
 conda activate scorers
 
 cd scorers  # important!!!!!!! Make sure you are under the projcet directory for the following command.
@@ -63,13 +72,25 @@ bash basic_env_setup.sh
 ~~~
 
 ### VLLM Environment
-
+Use this environment for BoN prediction.
 ~~~shell
-conda create -n scorers_vllm python==3.10 -y
+conda create -n scorers_vllm python==3.12 -y
 conda activate scorers_vllm
 
 cd scorers  # important!!!!!!! Make sure you are under the projcet directory for the following command.
 bash vllm_env_setup.sh
+~~~
+
+### RL Environment
+Use this for RL training.
+~~~shell
+conda create -n verl python==3.12 -y
+conda activate verl
+
+cd scorers/customVeRL
+pip install torch
+pip install -e .
+pip install pandas fastparquet
 ~~~
 
 ## Get Started
@@ -367,6 +388,32 @@ python ./python_script/web_demo.py -c PumpkinCat/Qwen2VL-7B-RS --flash-attn2
 python ./python_script/web_demo.py -c PumpkinCat/Qwen2VL-7B-RS-R1 --flash-attn2 --reasoning
 ~~~
 
+## Training
+
+### Score Model Training
+
++ Please follow the instructions following these shell scripts ([Stage1](./script/train_reward_first_stage.sh), [Stage2](./script/train_reward_second_stage.sh), [Stage3](./script/train_reward_third_stage.sh)) for the first, second, and third stage training.
+
+### CLIP Training
+
++ Please follow the [shell script](./script/train_clip_remoteclip.sh)
+
+### Large VLM Training
+
++ Please follow the two shell script for fine-tuning large VLMs: [pretrain](./script/train_pretrain.sh), [sft](./script/train_sft.sh)
+
+### RL Training
+
++ First, launch the score model server:
+
+    ~~~shell
+    cd customVeRL/exampels/reward_function
+    
+    uvicorn reward_server:app --host 0.0.0.0 --port 8000
+    ~~~
+
++ Then, follow the instructions of this shell script: [RL Training](./customVeRL/examples/train_grpo.sh)
+
 ## Evaluation
 
 ### CLIP Evaluation
@@ -381,7 +428,7 @@ python ./python_script/web_demo.py -c PumpkinCat/Qwen2VL-7B-RS-R1 --flash-attn2 
 
 ### LVLM Evaluation
 
-+ First download and zip [this zip file](https://huggingface.co/datasets/LHRS/RSRM/blob/main/LMEval.zip) from our Huggingface Repo
++ First download and unzip our published Eval dataset after the anonymous time.
 
 + For Evaluation Our Qwen2VL-RS Series (Shell Script)
 
@@ -392,7 +439,7 @@ python ./python_script/web_demo.py -c PumpkinCat/Qwen2VL-7B-RS-R1 --flash-attn2 
         DATA_ROOT="Your path to unzip folder"
         OUTPUT_DIR="Your path to eval log file"
         model_type=lmdeploy
-        MODEL_PATH=PumpkinCat/Qwen2VL-7B-RS
+        MODEL_PATH= # path to Qwen2VL-RS
         
         CUDA_VISIBLE_DEVICES=0 accelerate launch --num_processes 1 --mixed_precision bf16 $SCRIPT_PATH \
             --data_root $DATA_ROOT \
@@ -407,7 +454,7 @@ python ./python_script/web_demo.py -c PumpkinCat/Qwen2VL-7B-RS-R1 --flash-attn2 
 
         ~~~shell
         ...  # same as above
-        MODEL_PATH=PumpkinCat/Qwen2VL-7B-RS-R1
+        MODEL_PATH= # path to Qwen2VL-RS-R1
         REASONING_CONFIG=./python_script/evaluation/qwen2_thinking_template.json
         
         CUDA_VISIBLE_DEVICES=0 accelerate launch --num_processes 1 --mixed_precision bf16 $SCRIPT_PATH \
@@ -448,6 +495,12 @@ python ./python_script/web_demo.py -c PumpkinCat/Qwen2VL-7B-RS-R1 --flash-attn2 
         MODEL_PATH="your_path_to FINAL.pt"  # important!!! must be point to FINAL.pt file and make sure the TextLoRA is under the same folder with the FINAL.pt
         ... # same as eval on Qwen2VL-RS
         ~~~
+
+### BoN Evaluation
+
++ Make sure your are under the vllm environment settings.
+    + For BoN evaluation on LHRS-Bench, please refer to [this file](./python_script/evaluation/lhrs_bench_bon.py).
+    + For BoN evaluation on VG-DIOR, please refer to [this file](./python_script/evaluation/vg_bon.py).
 
 ## Data
 + Our preference data can be found at [Hugging Face](https://huggingface.co/datasets/LHRS/RSRM/tree/main).

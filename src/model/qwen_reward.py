@@ -360,6 +360,7 @@ class Qwen2Reward(Qwen2VLPreTrainedModel):
 
         hidden_states = outputs[0]
         values = self.reward_head(hidden_states)
+        values = torch.nn.functional.softplus(values)
 
         if input_ids is not None:
             batch_size = input_ids.shape[0]

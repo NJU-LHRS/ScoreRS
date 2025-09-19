@@ -39,9 +39,11 @@ BENCH_DATASETS = {
     # rsvqa
     "vqa_HR-comp": ("RSVQA_HR-comp_RSVQA.json", "vqa"),
     "vqa_HR-pre": ("RSVQA_HR-presence_RSVQA.json", "vqa"),
+    "vqa_HR-counting": ("RSVQA_HR-Counting_RSVQA.json", "vqa"),
     "vqa_LR-comp": ("RSVQA_LR-comp_RSVQA.json", "vqa"),
     "vqa_LR-pre": ("RSVQA_LR-presence_RSVQA.json", "vqa"),
     "vqa_LR-rural": ("RSVQA_LR-rural_urban_RSVQA.json", "vqa"),
+    "vqa_LR-counting": ("RSVQA_LR-Counting_RSVQA.json", "vqa"),
     # vg
     "rs_vg": ("VG_DOIR_RSVG_test.json", "bbox"),
     # LHRS-Bench
@@ -262,12 +264,15 @@ def eval_results_bbox(
                 level_count[l] += 1
 
                 if answer and pred and len(pred) > 0 and len(answer) > 0:
-                    pred_bbox = [
-                        float(pred[0] * w / model.bbox_normalize_bound),
-                        float(pred[1] * h / model.bbox_normalize_bound),
-                        float(pred[2] * w / model.bbox_normalize_bound),
-                        float(pred[3] * h / model.bbox_normalize_bound),
-                    ]
+                    if model.bbox_normalize_bound is not None:
+                        pred_bbox = [
+                            float(pred[0] * w / model.bbox_normalize_bound),
+                            float(pred[1] * h / model.bbox_normalize_bound),
+                            float(pred[2] * w / model.bbox_normalize_bound),
+                            float(pred[3] * h / model.bbox_normalize_bound),
+                        ]
+                    else:
+                        pred_bbox = pred
                     iou = calculate_iou(answer, pred_bbox)
 
                     if img_i % 100 == 0:
@@ -424,7 +429,11 @@ def infer_single(model, anns_json_path, anns, task_type):
         dataset_base = Path(anns_json_path).parent
         fn_full = dataset_base / anns["image_path"] / fn
 
-    question, answer = convt_qa(anns["conversations"], task_type, model)
+    if "conversations" in anns.keys():
+        question, answer = convt_qa(anns["conversations"], task_type, model)
+    else:
+        question, answer = convt_qa(anns["conversation"], task_type, model)
+
     question = question.replace("<image>\n", "")
     if "size" not in anns.keys():
         image = Image.open(fn_full).convert("RGB")

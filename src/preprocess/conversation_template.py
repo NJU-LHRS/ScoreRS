@@ -1,4 +1,3 @@
-# Modified from LLaVA: https://github.com/haotian-liu/LLaVA.git
 import base64
 import dataclasses
 from enum import Enum, auto

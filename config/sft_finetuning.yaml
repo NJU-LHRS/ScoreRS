@@ -1,0 +1,59 @@
+### model
+model_name_or_path: "" # your model path
+trust_remote_code: true
+flash_attn: fa2
+
+
+### method
+stage: sft
+do_train: true
+max_pixels: 1024
+finetuning_type: lora
+lora_rank: 8
+lora_alpha: 8
+lora_target: all
+freeze_extra_modules: merger
+freeze_vision_tower: true  # choices: [true, false]
+freeze_multi_modal_projector: false  # choices: [true, false]
+train_mm_proj_only: false  # choices: [true, false]
+deepspeed: "" # your deepspeed config path
+
+### dataset
+dataset: "" # your dataset name
+dataset_dir: "" # your dataset directory
+template: "" # your template name
+cutoff_len: 8192
+max_samples: null
+overwrite_cache: true
+preprocessing_num_workers: 16
+dataloader_num_workers: 8
+tokenized_path: "" # your tokenized path
+
+### output
+output_dir: "" # your output directory
+logging_steps: 10
+save_steps: 1000
+plot_loss: true
+overwrite_output_dir: true
+report_to: all
+run_name: "" # your run name
+
+### train
+per_device_train_batch_size: 8
+gradient_accumulation_steps: 1
+learning_rate: 2.0e-4
+num_train_epochs: 1.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+ddp_timeout: 180000000
+weight_decay: 0.01
+
+### eval
+eval_dataset: "" # your eval dataset name
+eval_steps: 1000
+per_device_eval_batch_size: 1
+predict_with_generate: true
+eval_exact_match: true
+eval_strategy: steps
+pad_left_eval: true

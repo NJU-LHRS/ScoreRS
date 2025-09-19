@@ -6,10 +6,10 @@ import torch.nn.functional as F
 import wandb
 from tqdm import tqdm
 
-from ..custom_trainer.PumpkinTrainer.hook.eval_hook import EvalHook
-from ..custom_trainer.PumpkinTrainer.hook.logger_hook import LoggerHook
+from ..custom_trainer.CustomTrainer.hook.eval_hook import EvalHook
+from ..custom_trainer.CustomTrainer.hook.logger_hook import LoggerHook
 from ..dataset.prompt_class import CLIP_TEMPLATE
-from ..custom_trainer.PumpkinTrainer.utils import is_main_process, barrier
+from ..custom_trainer.CustomTrainer.utils import is_main_process, barrier
 
 logger = logging.getLogger("train")
 
@@ -25,7 +25,11 @@ def zero_shot_classifier(
         zeroshot_weights = []
         for classname in tqdm(classnames):
             texts = [template(classname) for template in templates]  # format with class
-            texts = tokenizer(texts, return_tensors="pt", padding=True, truncation=True).to(device)  # tokenize
+            texts = tokenizer(
+                texts, return_tensors="pt", padding=True, truncation=True
+            ).to(
+                device
+            )  # tokenize
             class_embeddings = model.get_text_features(**texts)
             class_embedding = F.normalize(class_embeddings, dim=-1).mean(dim=0)
             class_embedding /= class_embedding.norm()
@@ -104,8 +108,12 @@ class CLIPClsEvalHook(EvalHook):
                 )
                 for hook in self.trainer._hooks:
                     if isinstance(hook, LoggerHook):
-                        hook._tb_writer.add_scalar(f"eval/clip_cls_{dataset_name}_top1", top1)
-                        hook._tb_writer.add_scalar(f"eval/clip_cls_{dataset_name}_top5", top5)
+                        hook._tb_writer.add_scalar(
+                            f"eval/clip_cls_{dataset_name}_top1", top1
+                        )
+                        hook._tb_writer.add_scalar(
+                            f"eval/clip_cls_{dataset_name}_top5", top5
+                        )
                         if hook.wandb:
                             wandb.log(
                                 {
@@ -114,8 +122,7 @@ class CLIPClsEvalHook(EvalHook):
                                 }
                             )
                         break
-        barrier()   
-
+        barrier()
 
 
 class EpochCLIPClsEvalHook(CLIPClsEvalHook):

@@ -784,7 +784,7 @@ def load_pretrained_model(
         else:
             tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
             model = VHMLlamaForCausalLM.from_pretrained(
-                model_path, low_cpu_mem_usage=True, **kwargs
+                model_path, tp_plan=None, **kwargs
             )
     else:
         # Load language model

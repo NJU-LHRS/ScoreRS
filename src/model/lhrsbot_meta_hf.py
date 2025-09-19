@@ -219,10 +219,13 @@ class VisionPerceiver(nn.Module):
             layer_down_bias = "layers.{}.mlp.c_proj.bias"
 
             for layer_idx in range(len(self.layers)):
-                up_weight = state_dict[layer_up_weight.format(layer_idx)]
-                up_bias = state_dict[layer_up_bias.format(layer_idx)]
-                down_weight = state_dict[layer_down_weight.format(layer_idx)]
-                down_bias = state_dict[layer_down_bias.format(layer_idx)]
+                if layer_up_weight.format(layer_idx) in state_dict.keys():
+                    up_weight = state_dict[layer_up_weight.format(layer_idx)]
+                    up_bias = state_dict[layer_up_bias.format(layer_idx)]
+                    down_weight = state_dict[layer_down_weight.format(layer_idx)]
+                    down_bias = state_dict[layer_down_bias.format(layer_idx)]
+                else:
+                    break
 
                 for expert_idx in range(self.num_experts):
                     self.layers[layer_idx].mlp.calculator.experts.weight_up[

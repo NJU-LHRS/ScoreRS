@@ -26,7 +26,8 @@ def hack_hf_image_transform(image_processor: CLIPImageProcessor, image: Image.Im
 def arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model_path", type=str, default="openai/clip-vit-large-patch14"
+        "--model_path",
+        type=str,
     )
     parser.add_argument("--image_root", type=str, default="data/images")
     parser.add_argument("--output_path", type=str, default="/output")

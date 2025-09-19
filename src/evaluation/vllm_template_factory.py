@@ -1,11 +1,3 @@
-"""
-This example shows how to use vLLM for running offline inference with
-the correct prompt format on vision language models for text generation.
-
-For most models, the prompt format should follow corresponding examples
-on HuggingFace model repository.
-"""
-
 from transformers import AutoProcessor, AutoTokenizer
 import torch
 import gc
@@ -30,10 +22,13 @@ def load_llm(model_name: str, model_path: str = None, device: str = "cuda:0"):
         llm = LLM(
             model=model_path,
             trust_remote_code=True,
-            disable_mm_preprocessor_cache=False,
+            disable_mm_preprocessor_cache=True,
+            tensor_parallel_size=1,
             dtype="float16",
             device=device,
             gpu_memory_utilization=0.6,
+            max_model_len=4096,
+            enforce_eager=True,
         )
         processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
         return llm, processor
@@ -43,10 +38,13 @@ def load_llm(model_name: str, model_path: str = None, device: str = "cuda:0"):
         llm = LLM(
             model=model_path,
             trust_remote_code=True,
-            disable_mm_preprocessor_cache=False,
+            disable_mm_preprocessor_cache=True,
+            tensor_parallel_size=1,
             dtype="float16",
             device=device,
             gpu_memory_utilization=0.6,
+            max_model_len=4096,
+            enforce_eager=True,
         )
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         return llm, tokenizer
@@ -55,10 +53,13 @@ def load_llm(model_name: str, model_path: str = None, device: str = "cuda:0"):
             model_path = "llava-hf/llava-v1.6-mistral-7b-hf"
         llm = LLM(
             model=model_path,
-            disable_mm_preprocessor_cache=False,
+            disable_mm_preprocessor_cache=True,
+            tensor_parallel_size=1,
             dtype="float16",
             device=device,
             gpu_memory_utilization=0.6,
+            max_model_len=4096,
+            enforce_eager=True,
         )
         processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
         return llm, processor
@@ -71,10 +72,13 @@ def load_llm(model_name: str, model_path: str = None, device: str = "cuda:0"):
                 "min_pixels": 28 * 28,
                 "max_pixels": 1280 * 28 * 28,
             },
-            disable_mm_preprocessor_cache=False,
+            disable_mm_preprocessor_cache=True,
+            tensor_parallel_size=1,
             dtype="float16",
             device=device,
             gpu_memory_utilization=0.6,
+            max_model_len=4096,
+            enforce_eager=True,
         )
         processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
         return llm, processor
@@ -87,10 +91,13 @@ def load_llm(model_name: str, model_path: str = None, device: str = "cuda:0"):
                 "min_pixels": 28 * 28,
                 "max_pixels": 1280 * 28 * 28,
             },
-            disable_mm_preprocessor_cache=False,
+            disable_mm_preprocessor_cache=True,
+            tensor_parallel_size=1,
             dtype="float16",
             device=device,
             gpu_memory_utilization=0.6,
+            max_model_len=4096,
+            enforce_eager=True,
         )
         processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
         return llm, processor
@@ -109,8 +116,8 @@ def run_internvl(question: str, processor: AutoProcessor):
     # models variants may have different stop tokens
     # please refer to the model card for the correct "stop words":
     # https://huggingface.co/OpenGVLab/InternVL2-2B/blob/main/conversation.py
-    stop_tokens = ["<|endoftext|>", "<|im_start|>", "<|im_end|>", "<|end|>"]
-    stop_token_ids = [processor.convert_tokens_to_ids(i) for i in stop_tokens]
+    stop_tokens = "<|endoftext|>"
+    stop_token_ids = [processor.convert_tokens_to_ids(stop_tokens)]
     return prompt, stop_token_ids
 
 

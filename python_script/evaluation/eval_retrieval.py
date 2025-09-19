@@ -23,14 +23,11 @@ logger = logging.getLogger(__name__)
 
 def arg_parser():
     parser = argparse.ArgumentParser(description="retrieval evaluation")
-    parser.add_argument(
-        "--model_path", type=str, default="openai/clip-vit-large-patch14"
-    )
+    parser.add_argument("--model_path", type=str)
     parser.add_argument("--data_root", type=str, default="data")
     parser.add_argument(
         "--target_root",
         type=str,
-        default="./ucmcaptions_img_txt_pairs_test.csv",
     )
     parser.add_argument("--output_dir", type=str, default="output")
     parser.add_argument("--batch_size", type=int, default=128)
