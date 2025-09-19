@@ -22,6 +22,7 @@
 We introduce ScoreRS, a quality assessment model trained on carefully curated large-scale remote sensing vision-language preference data. ScoreRS effectively scores and filters vision-language datasets, improving model performance by selecting high-quality data for training.
 
 ## News
++ Out new paper is available at [here](./assets/ScoreRS.pdf)
 + 🎉🎉🎉 Our work has been accepted for NeurIPS 2025, and we have released our training and evaluation code. Please stay tuned for the new version of our paper, with tons of exciting new results!
 + Please checkout the [blogpost](https://thinkable-technician-883.notion.site/ScoreRS-Quality-Driven-Curation-of-Remote-Sensing-Vision-Language-Data-via-Learned-Scoring-Models-1aed4688ded08153a298da10d690c30e) for the chain-of-thought behind this project :).
 + Our report is available at [arXiv](https://arxiv.org/abs/2503.00743) now!
